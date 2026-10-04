@@ -150,15 +150,7 @@ namespace OCS.VR.EditorTools
             bool customRoom = PlaceEnvironment();
 
             Camera cam = Camera.main;
-            if (cam != null)
-            {
-                // Standing eye height, 1.15 m from the bench, with a wider view so the tray
-                // and frame stand stay in frame. The XR rig replaces this camera later.
-                cam.transform.position = new Vector3(0f, 1.6f, -0.35f);
-                cam.transform.rotation = Quaternion.Euler(10f, 0f, 0f);
-                cam.fieldOfView = 70f;
-                cam.name = "Main Camera (flat preview, XR rig replaces this)";
-            }
+            if (cam != null) SetUpViewer(cam);
 
             // The template's light casts realtime shadows. CLAUDE.md: none until profiled.
             // Dimmed and cooled so the room reads as indoors and the LEDs stand out.
@@ -466,6 +458,36 @@ namespace OCS.VR.EditorTools
             Debug.Log($"[SceneBuilder] Built {ScenePath}: {layout.cardCount} cards, " +
                       $"{sequence.StepCount} assembly steps, {graph.NodeCount} system nodes, {art}, {room}. " +
                       "Press Play to watch the arc on a flat screen.");
+        }
+
+        // ----------------------------------------------------------------- viewer
+
+        /// <summary>
+        /// One camera for both the headset and the desk. It sits under a rig whose origin is
+        /// on the floor at the viewer's spot. In the headset, the TrackedPoseDriver moves it to
+        /// wherever the viewer's head really is, on a floor origin (XRFloorOrigin), so their
+        /// own eye height stands on the hall floor. In the editor with no headset nothing moves
+        /// it, and it keeps a standing eye height looking a little down at the rig: the preview.
+        /// No XR Interaction Toolkit: the experience is watched, so there is nothing to grab.
+        /// </summary>
+        static void SetUpViewer(Camera cam)
+        {
+            GameObject rig = new GameObject("XR Rig (floor at the viewer's spot)");
+            rig.transform.position = new Vector3(ViewerEye.x, 0f, ViewerEye.z);
+            rig.AddComponent<XRFloorOrigin>();
+
+            cam.transform.SetParent(rig.transform, false);
+            cam.transform.localPosition = new Vector3(0f, ViewerEye.y, 0f);
+            cam.transform.localRotation = Quaternion.Euler(10f, 0f, 0f);
+            cam.fieldOfView = 70f;                   // desk preview only; the headset sets its own
+            cam.nearClipPlane = 0.05f;               // parts fly close to the viewer's face
+            cam.name = "Main Camera (head)";
+
+            var head = cam.gameObject.AddComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>();
+            head.positionInput = new UnityEngine.InputSystem.InputActionProperty(
+                new UnityEngine.InputSystem.InputAction("Head Position", binding: "<XRHMD>/centerEyePosition", expectedControlType: "Vector3"));
+            head.rotationInput = new UnityEngine.InputSystem.InputActionProperty(
+                new UnityEngine.InputSystem.InputAction("Head Rotation", binding: "<XRHMD>/centerEyeRotation", expectedControlType: "Quaternion"));
         }
 
         // ------------------------------------------------------ software visuals

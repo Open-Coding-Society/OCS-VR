@@ -6,6 +6,10 @@ Work the lowest unfinished milestone. Do not start the next one until the curren
 
 ## Status
 
+**Demo path:** `docs/demo-checklist.md` is the ordered list from this repo to a working
+headset demo: URP, scene, play on the monitor, XR packages, build settings, OpenXR, build
+to the Quest, frame rate. The OCS > Quest menu does most of it.
+
 No box below is checked, because nothing has run on a headset yet. What exists is the
 code and data layer, written ahead of the toolchain so V1 is the only thing blocking.
 

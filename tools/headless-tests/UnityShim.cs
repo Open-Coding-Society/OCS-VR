@@ -274,6 +274,8 @@ namespace UnityEngine
         public float fieldOfView = 60f;
         public Color backgroundColor;
         public Transform transform = new Transform();
+        public GameObject gameObject = new GameObject();
+        public float nearClipPlane = 0.3f;
         public static Camera main => _main ?? (_main = new Camera());
         static Camera _main;
     }
@@ -630,4 +632,50 @@ namespace UnityEngine
 
     public class MeshFilter : Component { public Mesh sharedMesh; }
     public class MeshRenderer : Renderer { }
+}
+
+namespace UnityEngine
+{
+    public static class SubsystemManager
+    {
+        public static void GetSubsystems<T>(List<T> into) { into.Clear(); }
+    }
+    public enum ColorSpace { Uninitialized = -1, Gamma = 0, Linear = 1 }
+}
+
+namespace UnityEngine.XR
+{
+    [System.Flags]
+    public enum TrackingOriginModeFlags { Unknown = 0, Device = 1, Floor = 2, TrackingReference = 4, Unbounded = 8 }
+    public class XRInputSubsystem
+    {
+        public bool running;
+        public TrackingOriginModeFlags GetSupportedTrackingOriginModes() => TrackingOriginModeFlags.Floor;
+        public bool TrySetTrackingOriginMode(TrackingOriginModeFlags f) => true;
+    }
+}
+
+namespace UnityEngine.Rendering
+{
+    public enum GraphicsDeviceType { OpenGLES3 = 11, Vulkan = 21 }
+}
+
+namespace UnityEngine.InputSystem
+{
+    public enum InputActionType { Value, Button, PassThrough }
+    public class InputAction
+    {
+        public InputAction(string name = null, InputActionType type = default(InputActionType), string binding = null,
+                           string interactions = null, string processors = null, string expectedControlType = null) { }
+    }
+    public struct InputActionProperty { public InputActionProperty(InputAction a) { } }
+}
+
+namespace UnityEngine.InputSystem.XR
+{
+    public class TrackedPoseDriver : UnityEngine.Component
+    {
+        public UnityEngine.InputSystem.InputActionProperty positionInput { get; set; }
+        public UnityEngine.InputSystem.InputActionProperty rotationInput { get; set; }
+    }
 }

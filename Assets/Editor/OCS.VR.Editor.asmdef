@@ -2,7 +2,10 @@
     "name": "OCS.VR.Editor",
     "rootNamespace": "OCS.VR.EditorTools",
     "references": [
-        "OCS.VR"
+        "OCS.VR",
+        "Unity.InputSystem",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
     ],
     "includePlatforms": [
         "Editor"

@@ -179,6 +179,9 @@ live.
 
 ## 6. XR packages
 
+Faster: OCS > Quest > 1. Install XR Packages, then 2. Apply Quest Build Settings, then
+Check Setup. `docs/demo-checklist.md` has the whole order. By hand:
+
 Install these through the Package Manager, not by hand editing `manifest.json`:
 
 - **OpenXR Plugin** with the Meta Quest feature group enabled
