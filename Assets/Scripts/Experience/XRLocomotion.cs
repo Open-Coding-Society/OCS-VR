@@ -84,7 +84,7 @@ namespace OCS.VR.Experience
         void Update()
         {
             if (head == null) return;
-            float dt = Time.deltaTime;
+            float dt = Time.unscaledDeltaTime;     // walking pace even while fast forwarding
 
             Vector2 move = LocomotionMath.Deadzone(_move.ReadValue<Vector2>(), deadzone);
             if (move.sqrMagnitude > 0f)

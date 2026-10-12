@@ -6,7 +6,7 @@ Context for Claude Code working in this repository. Read this before touching an
 
 A VR experience for Meta Quest that shows how our OCS LLM infrastructure works: the GPU rig assembling itself around the viewer, then a real inference request traveling through the system and landing on a specific graphics card in front of them.
 
-This is an **experience**, not a tutorial. There is no quiz, no gating, no scoring. The viewer watches and looks around, and can walk the hall with the sticks (left walks, right turns and rises, the left menu button starts over). Pacing and clarity matter more than interactivity: nothing waits for input.
+This is an **experience**, not a tutorial. There is no quiz, no gating, no scoring. The viewer watches and looks around, and can walk the hall with the sticks (left walks, right turns and rises, holding the right trigger fast forwards 4×, the left menu button starts over). Pacing and clarity matter more than interactivity: nothing waits for input.
 
 The software is laid out in the hall as stations you can walk to, in a horseshoe round the rig: the student's desk, the AWS gate, the broker's tower with Redis and RDS, the NetBird portal, the GPU Rig sign behind the rig. The request runs between them along a track of light on the floor.
 
@@ -144,6 +144,8 @@ Experience
 - `Experience/XRLocomotion.cs` — reads the sticks (WASD and arrows in the editor) and moves
   the XR rig
 - `Experience/RestartButton.cs` — the left menu button (R in the editor) reloads the scene
+- `Experience/FastForwardButton.cs` — holding the right trigger (F in the editor) runs game
+  time at 4×; walking uses unscaled time
 - `Experience/XRFloorOrigin.cs` — puts tracking on a floor origin, so the viewer's own
   height stands on the hall floor
 

@@ -530,11 +530,19 @@ namespace OCS.VR.EditorTools
             // The left controller's menu button starts the experience over.
             rig.AddComponent<RestartButton>();
 
+            // Hold the right trigger to fast forward. A small note low in view says so.
+            TextMesh fast = Text("Fast Forward Note", cam.transform, new Vector3(0f, -0.32f, 1.4f), 0.04f,
+                                 TextAnchor.MiddleCenter, Amber, ">>  FAST FORWARD  4×");
+            FastForwardButton ff = rig.AddComponent<FastForwardButton>();
+            ff.speed = 4f;
+            ff.indicator = fast.gameObject;
+            fast.gameObject.SetActive(false);
+
             // The controls, written on the floor where the viewer starts: there when they
             // look down for them, never in the way when they look up.
             TextMesh controls = Text("Controls", null, new Vector3(ViewerEye.x, 0.01f, ViewerEye.z + 0.45f), 0.035f,
                                      TextAnchor.MiddleCenter, CaptionColour,
-                                     "LEFT STICK  walk      RIGHT STICK  turn, rise\nMENU BUTTON  start again");
+                                     "LEFT STICK  walk      RIGHT STICK  turn, rise\nHOLD RIGHT TRIGGER  fast forward      MENU BUTTON  start again");
             controls.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         }
 

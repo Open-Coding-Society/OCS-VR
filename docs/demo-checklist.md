@@ -40,8 +40,9 @@ that doesn't match and fix it before going on.
      stream across to the student's screen and the answer types out; the floor ripples
      orange;
    - the answer runs back along the track and the Student station flashes.
-   - Walk round with WASD (arrow keys turn and rise) and press R to start over: the same
-     as the sticks and the menu button in the headset.
+   - Walk round with WASD (arrow keys turn and rise), hold F to fast forward and press R to
+     start over: the same as the sticks, the right trigger and the menu button in the
+     headset.
    - Nothing is pink or magenta, no text is mirrored, nothing floats in the wrong place.
    If something is off, a screenshot and the Console are all I need.
 
@@ -76,7 +77,8 @@ that doesn't match and fix it before going on.
 13. **Watch the whole arc in the headset**, as in step 5. Also check:
     - it's comfortable: nothing pops in too close to your face, text is readable;
     - the controls: left stick walks, right stick turns (left and right) and rises
-      (up and down), the menu button on the left controller starts it over. They are
+      (up and down), holding the right trigger fast forwards 4×, the menu button on the
+      left controller starts it over. They are
       written on the floor at your feet;
     - **frame rate.** Turn on the Meta performance overlay (Meta Quest Developer Hub >
       Performance Overlay) and watch the fps through the power on wave and while tokens

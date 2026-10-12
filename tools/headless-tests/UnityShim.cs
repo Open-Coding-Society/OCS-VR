@@ -73,6 +73,8 @@ namespace UnityEngine
     public static class Time
     {
         public static float deltaTime = 1f / 72f; // Quest 2 floor
+        public static float unscaledDeltaTime = 1f / 72f;
+        public static float timeScale = 1f;
         public static float time = 0f;
     }
 
@@ -692,6 +694,7 @@ namespace UnityEngine.InputSystem
         public void Dispose() { }
         public T ReadValue<T>() where T : struct => default(T);
         public bool WasPressedThisFrame() => false;
+        public bool IsPressed() => false;
         public struct CompositeSyntax
         {
             readonly InputAction _a;
