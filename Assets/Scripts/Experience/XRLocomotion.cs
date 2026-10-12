@@ -55,6 +55,14 @@ namespace OCS.VR.Experience
                  .With("Left", "<Keyboard>/leftArrow").With("Right", "<Keyboard>/rightArrow");
         }
 
+        void Start()
+        {
+            Debug.Log(head != null
+                ? "[XRLocomotion] Ready. Headset: left stick walks, right stick turns and rises. " +
+                  "Editor: click in the Game view, then WASD walks, the arrow keys turn and rise."
+                : "[XRLocomotion] No head assigned, so nothing will move. Rebuild the scene: OCS > Build Experience Scene.");
+        }
+
         void OnEnable()
         {
             _move?.Enable();
