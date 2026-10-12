@@ -27,6 +27,10 @@ namespace OCS.VR.Experience
                  "in behind a node when it arrives instead of covering its name.")]
         public Vector3 pulseOffset;
 
+        [Tooltip("Zero or more: the pulse runs along the floor at this height (in the view's " +
+                 "space), following the track under the nodes. Negative: between the nodes.")]
+        public float pulseFloorHeight = -1f;
+
         [Header("Feel")]
         [Tooltip("Edges per second the pulse travels.")]
         public float travelSpeed = 4f;
@@ -169,6 +173,7 @@ namespace OCS.VR.Experience
             Vector3 to = graph.nodes[cur].position;
             int prev = _state.PreviousNode;
             Vector3 from = prev >= 0 && prev < graph.NodeCount ? graph.nodes[prev].position : to;
+            if (pulseFloorHeight >= 0f) { to.y = pulseFloorHeight; from.y = pulseFloorHeight; }
 
             pulse.localPosition = Vector3.Lerp(from, to, _state.EdgeProgress01) + pulseOffset;
         }

@@ -1,7 +1,9 @@
 {
     "name": "OCS.VR",
     "rootNamespace": "OCS.VR",
-    "references": [],
+    "references": [
+        "Unity.InputSystem"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -194,7 +194,9 @@ namespace OCS.VR.EditorTools
                         ? "Couldn't read it from here: open Project Settings > XR Plug-in Management, Android tab, and tick OpenXR"
                         : "Project Settings > XR Plug-in Management > Android tab: tick OpenXR, then tick the Meta Quest feature group");
                 report.Append("  check  Project Settings > XR Plug-in Management > OpenXR > Android tab: Meta Quest Support ticked,\n" +
-                              "         Render Mode = Single Pass Instanced, and Project Validation shows no red errors\n");
+                              "         Render Mode = Single Pass Instanced, Oculus Touch Controller Profile under\n" +
+                              "         Enabled Interaction Profiles (the sticks and the restart button need it),\n" +
+                              "         and Project Validation shows no red errors\n");
             }
 
             report.Append(missing == 0 ? "All set: File > Build Profiles > Android > Build And Run with the headset plugged in."

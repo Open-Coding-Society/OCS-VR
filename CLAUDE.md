@@ -6,7 +6,9 @@ Context for Claude Code working in this repository. Read this before touching an
 
 A VR experience for Meta Quest that shows how our OCS LLM infrastructure works: the GPU rig assembling itself around the viewer, then a real inference request traveling through the system and landing on a specific graphics card in front of them.
 
-This is an **experience**, not a tutorial. There is no quiz, no gating, no scoring. The viewer watches and looks around. Pacing and clarity matter more than interactivity.
+This is an **experience**, not a tutorial. There is no quiz, no gating, no scoring. The viewer watches and looks around, and can walk the hall with the sticks (left walks, right turns and rises, the left menu button starts over). Pacing and clarity matter more than interactivity: nothing waits for input.
+
+The software is laid out in the hall as stations you can walk to, in a horseshoe round the rig: the student's desk, the AWS gate, the broker's tower with Redis and RDS, the NetBird portal, the GPU Rig sign behind the rig. The request runs between them along a track of light on the floor.
 
 Part of the CSH / OCS Intelligence Infrastructure project. Teammates Yash Parikh and Anvay Vahia own the broker and control plane. I own the GPU rigs and this VR layer.
 
@@ -102,13 +104,15 @@ Experience
 - `Experience/AssemblyPlayer.cs` — moves parts from tray to socket
 - `Experience/SystemGraph.cs` — system view topology as data
 - `Experience/SystemRouteState.cs` — where the request is, plain C#
-- `Experience/SystemViewDisplay.cs` — draws nodes and the travelling pulse
+- `Experience/SystemViewDisplay.cs` — places the station signs and runs the request's
+  pulse along the floor track
 - `Experience/NarrationTrack.cs` — narration lines as data, keyed by cue
 - `Experience/NarrationDirector.cs` — picks the line for what is happening
 - `Experience/RigPower.cs` — powers the cards on in a ripple at Act 3
 - `Experience/RoomAtmosphere.cs` — ambient light and background, carried by the room
 - `Experience/BeamGlowState.cs` — which system view links are lit, plain C#
-- `Experience/SystemBeams.cs` — draws those links, and the beam from the GPU Rig node to the card
+- `Experience/SystemBeams.cs` — draws those links as a track on the floor, and the beam from
+  the GPU Rig sign to the cards
 - `Experience/HopCaptions.cs` — what each node did and how long it took
 - `Experience/TelemetryText.cs` — every readout string, plain C#
 - `Experience/CardTelemetryLabel.cs` — load, temperature and tokens over the working card
@@ -118,8 +122,9 @@ Experience
   and how long it stays come from the step's `label`, `labelOffset` and `labelSeconds`
 - `Experience/FaceCamera.cs` — turns labels to face the viewer
 - `Experience/StageMotion.cs` — how far a stage change is along, from the act, plain C#
-- `Experience/StageDirector.cs` — sinks the empty tray and stand after assembly, grows
-  the system view in at power on, brings the timeline in with the request
+- `Experience/StageDirector.cs` — sinks the empty tray and stand after assembly, raises
+  the stations out of the floor at power on in the order the request visits them, brings
+  the timeline, the student's screen and the journey board in with the request
 - `Experience/FlightPath.cs` — the arc, overshoot and spin parts fly on, plain C#
 - `Experience/WorldPulse.cs` — the power on wave and the hall waking, plain C#
 - `Experience/WorldPulseDriver.cs` — hands those, and the generation ripples, to the
@@ -128,12 +133,19 @@ Experience
   working card and at the client when the answer lands
 - `Experience/TokenStream.cs` — tokens flying off the working card into the answer panel
 - `Experience/AnswerText.cs`, `Experience/AnswerPanel.cs` — the prompt, and the answer
-  typing itself out word by word
+  typing itself out word by word, on the student's screen at the Student station
 - `Experience/InfoBoard.cs` — a board of facts as data (`RigFacts.asset`), shown left of
-  the viewer as "The rig at a glance"
-- `Experience/JourneyText.cs`, `Experience/JourneyBoard.cs` — "How a request flows", right
-  of the viewer: every hop with its time, lit as the request reaches it, then the total
-  and the GPU's share
+  the viewer, as "The rig at a glance"
+- `Experience/JourneyText.cs`, `Experience/JourneyBoard.cs` — "How a request flows", further
+  right: every hop with its time, lit as the request reaches it, then the total and the
+  GPU's share
+- `Experience/LocomotionMath.cs` — dead zone, walking where the head faces, staying inside
+  the hall, snap turns and rising, plain C#
+- `Experience/XRLocomotion.cs` — reads the sticks (WASD and arrows in the editor) and moves
+  the XR rig
+- `Experience/RestartButton.cs` — the left menu button (R in the editor) reloads the scene
+- `Experience/XRFloorOrigin.cs` — puts tracking on a floor origin, so the viewer's own
+  height stands on the hall floor
 
 Information lives in the data, so wording can be corrected without code: each assembly
 step's `label` and `detail` (a fact line under the part's name), each system node's
@@ -151,7 +163,9 @@ Editor
 - `Editor/ExperienceSceneBuilder.cs` — OCS > Build Experience Scene. Uses models from
   `Assets/Art/Models` when present, placeholders otherwise. Uses
   `Assets/Prefabs/Environment.prefab` for the room when present, otherwise builds the
-  data hall: rack rows, grid floor, dais, pillars, signs, dust and fog. OCS > Save Environment As Prefab saves the current room, so edits made to
+  data hall: rack rows, grid floor, dais, pillars, signs, dust and fog. Each system node
+  becomes a station (BuildStation): a prop on the floor and a sign over it that turns to
+  face the viewer; SystemGraph positions are where the signs hang, in world space. OCS > Save Environment As Prefab saves the current room, so edits made to
   it by hand survive rebuilds. Edits to anything else in the scene do not
 - `Editor/RigModelImportSettings.cs` — import settings for those models
 
@@ -170,8 +184,8 @@ Data, in `Assets/Data/`
 
 Tests in `Assets/Tests/EditMode/` cover the loader, card lighting, the assembly
 timeline, hop routing, narration cues, beam glow, readout text, timeline layout,
-stage timing, flight paths, the power on wave, the answer text, the journey board and
-playback pacing.
+stage timing, flight paths, the power on wave, the answer text, the journey board,
+playback pacing and locomotion.
 `tools/headless-tests/` also compiles the shaders' HLSL with glslang when it is
 installed; that catches syntax errors, not how they look.
 

@@ -55,6 +55,8 @@ namespace UnityEngine
         public static float Clamp(float v, float lo, float hi) => v < lo ? lo : (v > hi ? hi : v);
         public static int Max(int a, int b) => a > b ? a : b;
         public static float Max(float a, float b) => a > b ? a : b;
+        public static float Min(float a, float b) => a < b ? a : b;
+        public const float Deg2Rad = (float)(System.Math.PI / 180.0);
         public static float Floor(float v) => (float)Math.Floor(v);
         public static float Lerp(float a, float b, float t) => a + (b - a) * Clamp01(t);
         public static float Abs(float v) => v < 0f ? -v : v;
@@ -237,6 +239,8 @@ namespace UnityEngine
         public Transform GetChild(int i) => Children[i];
         public Transform Find(string n) { foreach (var c in Children) if (c.name == n) return c; return null; }
         public void Rotate(Vector3 axis, float degrees, Space space) { RotatedDegrees += degrees; }
+        public Vector3 eulerAngles;
+        public void RotateAround(Vector3 point, Vector3 axis, float degrees) { RotatedDegrees += degrees; }
     }
 
 
@@ -620,6 +624,16 @@ namespace UnityEngine
     {
         public float x, y;
         public Vector2(float x, float y) { this.x = x; this.y = y; }
+        public static Vector2 zero => new Vector2(0f, 0f);
+        public float sqrMagnitude => x * x + y * y;
+        public float magnitude => (float)Math.Sqrt(x * x + y * y);
+        public static Vector2 operator *(Vector2 a, float k) => new Vector2(a.x * k, a.y * k);
+        public static Vector2 operator /(Vector2 a, float k) => new Vector2(a.x / k, a.y / k);
+        public static bool operator ==(Vector2 a, Vector2 b) => a.x == b.x && a.y == b.y;
+        public static bool operator !=(Vector2 a, Vector2 b) => !(a == b);
+        public override bool Equals(object o) => o is Vector2 v && v == this;
+        public override int GetHashCode() => x.GetHashCode() ^ y.GetHashCode();
+        public override string ToString() => "(" + x + ", " + y + ")";
     }
 
     public class Mesh : Object
@@ -666,8 +680,24 @@ namespace UnityEngine.InputSystem
     public enum InputActionType { Value, Button, PassThrough }
     public class InputAction
     {
+        public readonly List<string> Bindings = new List<string>();
+        public bool enabled;
         public InputAction(string name = null, InputActionType type = default(InputActionType), string binding = null,
-                           string interactions = null, string processors = null, string expectedControlType = null) { }
+                           string interactions = null, string processors = null, string expectedControlType = null)
+        { if (binding != null) Bindings.Add(binding); }
+        public void AddBinding(string path) { Bindings.Add(path); }
+        public CompositeSyntax AddCompositeBinding(string composite) => new CompositeSyntax(this);
+        public void Enable() { enabled = true; }
+        public void Disable() { enabled = false; }
+        public void Dispose() { }
+        public T ReadValue<T>() where T : struct => default(T);
+        public bool WasPressedThisFrame() => false;
+        public struct CompositeSyntax
+        {
+            readonly InputAction _a;
+            public CompositeSyntax(InputAction a) { _a = a; }
+            public CompositeSyntax With(string part, string path) { _a.Bindings.Add(path); return this; }
+        }
     }
     public struct InputActionProperty { public InputActionProperty(InputAction a) { } }
 }
@@ -678,5 +708,16 @@ namespace UnityEngine.InputSystem.XR
     {
         public UnityEngine.InputSystem.InputActionProperty positionInput { get; set; }
         public UnityEngine.InputSystem.InputActionProperty rotationInput { get; set; }
+    }
+}
+
+namespace UnityEngine.SceneManagement
+{
+    public struct Scene { public int buildIndex; public string name; }
+    public static class SceneManager
+    {
+        public static Scene GetActiveScene() => new Scene { buildIndex = 0, name = "Experience" };
+        public static void LoadScene(int index) { }
+        public static void LoadScene(string name) { }
     }
 }

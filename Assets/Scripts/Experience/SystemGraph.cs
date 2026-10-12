@@ -23,7 +23,9 @@ namespace OCS.VR.Experience
         [Tooltip("Used to place a hop whose node_id is not in this graph.")]
         public HopType hopType = HopType.Unknown;
 
-        [Tooltip("Where the node sits, relative to the system view root.")]
+        [Tooltip("Where the node's sign hangs, relative to the system view root. The scene " +
+                 "builder puts that root at the world origin and stands the node's station on " +
+                 "the floor under the sign.")]
         public Vector3 position;
 
         public string DisplayLabel => string.IsNullOrEmpty(displayName) ? nodeId : displayName;

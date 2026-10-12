@@ -43,16 +43,26 @@ namespace OCS.VR.EditorTools
         // Where the viewer's eyes start. Panels and the dashboard are turned to face it.
         static readonly Vector3 ViewerEye = new Vector3(0f, 1.6f, -0.35f);
 
-        // SystemViewDisplay rewrites node positions from SystemGraph.asset every frame, so
-        // the root transform is the lever. It sits at the middle of the arch the nodes
-        // make over the rig, which is also the point the view grows out of at power on.
-        // SystemGraph.asset positions are relative to it; Rig 2's node is straight above
-        // the real rig, so the beam from it drops onto the working card.
-        static readonly Vector3 SystemViewPosition = new Vector3(0f, 2.4f, 3.6f);
+        // The software stands in the hall as stations you can walk to, one per node in
+        // SystemGraph.asset, in a horseshoe round the rig: the student's desk front left,
+        // the AWS gate, the broker's tower with Redis and RDS behind it, the NetBird portal
+        // on the right. The view's root is the world origin, so SystemGraph positions are
+        // world positions: where each station's sign hangs. The station stands on the
+        // floor under its sign, and a track of light on the floor joins them along the
+        // request's path. The GPU Rig's sign hangs behind the real rig, and the beam from
+        // it lands on the working cards.
+        static readonly Vector3 SystemViewPosition = Vector3.zero;
 
-        // The system view is built big, out over the hall: panels, text, the pulse and
-        // the beams are all this many times their desk size, and read from four metres.
-        const float ViewScale = 2.2f;
+        // Station signs are this many times desk size, to read from four to seven metres.
+        const float StationScale = 2f;
+
+        // The floor track, and the packet of light that runs along it, metres above the floor.
+        const float TrackHeight = 0.012f;
+        const float PulseHeight = 0.14f;
+
+        // Where the viewer can walk: inside the rack rows, between the end walls.
+        static readonly Vector2 WalkMin = new Vector2(-3.9f, -6.2f);
+        static readonly Vector2 WalkMax = new Vector2(3.9f, 21.5f);
 
         // Node panels, metres.
         // Name on top, caption under it, both inside the panel, so nothing hangs below it
@@ -72,9 +82,12 @@ namespace OCS.VR.EditorTools
         // the answer panel and its stream of tokens are on the right.
         static readonly Vector3 ReadoutOffset = new Vector3(-0.1f, 0.24f, 0f);
 
-        // The answer panel: right of the rig, below eye level, facing the viewer.
-        static readonly Vector3 AnswerPosition = new Vector3(1.2f, 1.42f, 1.55f);
+        // The answer panel: the student's screen, hanging over their desk at the Student
+        // station, where the answer really lands. Built at desk size and scaled up, so it
+        // reads from where the viewer starts and is comfortable up close.
+        static readonly Vector3 AnswerPosition = new Vector3(-2.35f, 1.42f, 1.1f);
         static readonly Vector2 AnswerSize = new Vector2(0.95f, 0.52f);
+        const float AnswerScale = 1.2f;
 
         // One palette. Cyan is the software and the network; amber is the GPU working.
         // Everything else is near black or grey, so the two colours carry the story.
@@ -286,17 +299,22 @@ namespace OCS.VR.EditorTools
             assembly.bindings = bindings.ToArray();
             assembly.playOnStart = false;
 
-            // ---------- system view ----------
+            // ---------- the software, as stations in the hall ----------
             GameObject systemView = new GameObject("SystemView");
             systemView.transform.position = SystemViewPosition;
 
-            // Each node is a dark panel turned to face the viewer: its name, a caption under
-            // it saying what happened there, and a light along its bottom edge that comes
-            // up while the request is there. The empty parent is what SystemViewDisplay
-            // moves.
+            // Each node is a station: something to look at on the floor (BuildStation) and a
+            // sign over it, turned toward the viewer wherever they stand: its name, a line on
+            // what it does, a caption for what just happened there, and a light along the
+            // bottom edge that comes up while the request is there. The empty parent of the
+            // sign is what SystemViewDisplay places.
+            // Stations rise out of the floor at power on, in the order the request visits them.
+            int[] visitOrder = RouteOrder(trace, graph);
+            var stationCues = new List<StageCue>();
             var markers = new Transform[graph.NodeCount];
             var accents = new Renderer[graph.NodeCount];
             var captions = new TextMesh[graph.NodeCount];
+            Vector3 panel = PanelSize * StationScale;
             for (int i = 0; i < graph.NodeCount; i++)
             {
                 SystemNode node = graph.nodes[i];
@@ -304,50 +322,59 @@ namespace OCS.VR.EditorTools
                 GameObject marker = new GameObject("Node " + node.nodeId);
                 marker.transform.SetParent(systemView.transform, false);
                 marker.transform.localPosition = node.position;
-                marker.transform.rotation = FacingViewer(marker.transform.position);
                 markers[i] = marker.transform;
 
-                Vector3 panel = PanelSize * ViewScale;
-                Child(marker, "Panel", PrimitiveType.Cube, Vector3.zero, panel, "NodePanel");
-                GameObject accent = Child(marker, "Accent", PrimitiveType.Cube,
+                GameObject sign = new GameObject("Sign");
+                sign.transform.SetParent(marker.transform, false);
+                sign.transform.rotation = FacingViewer(marker.transform.position);
+                sign.AddComponent<FaceCamera>();
+
+                Child(sign, "Panel", PrimitiveType.Cube, Vector3.zero, panel, "NodePanel");
+                GameObject accent = Child(sign, "Accent", PrimitiveType.Cube,
                                           new Vector3(0f, -panel.y / 2f + 0.006f, -panel.z / 2f - 0.002f),
                                           new Vector3(panel.x - 0.04f, 0.009f, 0.003f), "NodeAccent");
                 accents[i] = accent.GetComponent<Renderer>();
                 // The accent's glow: a soft line of light spilling past the panel's edge.
-                GlowQuad("Accent Glow", marker.transform, new Vector3(0f, -panel.y / 2f + 0.006f, -panel.z / 2f - 0.004f),
+                GlowQuad("Accent Glow", sign.transform, new Vector3(0f, -panel.y / 2f + 0.006f, -panel.z / 2f - 0.004f),
                          new Vector3(panel.x * 1.1f, 0.09f, 1f), "GlowBeamSoft");
 
                 float front = -panel.z / 2f - 0.003f;
-                Text("Name", marker.transform, new Vector3(0f, 0.045f * ViewScale, front), NodeNameHeight * ViewScale,
+                Text("Name", sign.transform, new Vector3(0f, 0.045f * StationScale, front), NodeNameHeight * StationScale,
                      TextAnchor.MiddleCenter, TextColour, node.DisplayLabel);
-                Text("Role", marker.transform, new Vector3(0f, 0.012f * ViewScale, front), 0.022f * ViewScale,
+                Text("Role", sign.transform, new Vector3(0f, 0.012f * StationScale, front), 0.022f * StationScale,
                      TextAnchor.MiddleCenter, new Color(Cyan.r, Cyan.g, Cyan.b) * 0.9f, node.role ?? string.Empty);
-                captions[i] = Text("Caption", marker.transform, new Vector3(0f, -0.004f * ViewScale, front),
-                                   NodeCaptionHeight * ViewScale, TextAnchor.UpperCenter, CaptionColour);
+                captions[i] = Text("Caption", sign.transform, new Vector3(0f, -0.004f * StationScale, front),
+                                   NodeCaptionHeight * StationScale, TextAnchor.UpperCenter, CaptionColour);
+
+                GameObject station = BuildStation(systemView.transform, node, panel.y / 2f);
+                float rise = 1.6f + 0.35f * visitOrder[i];
+                stationCues.Add(new StageCue { target = station.transform, act = Act.PowerOn, move = StageMove.Appear, delay = rise, duration = 0.9f });
+                stationCues.Add(new StageCue { target = marker.transform, act = Act.PowerOn, move = StageMove.Appear, delay = rise + 0.35f, duration = 0.7f });
             }
 
+            // The request: a ball of light running along the floor track from station to station.
             GameObject pulse = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             pulse.name = "Pulse";
             pulse.transform.SetParent(systemView.transform, false);
-            pulse.transform.localScale = Vector3.one * (0.04f * ViewScale);
+            pulse.transform.localScale = Vector3.one * 0.09f;
             RemoveCollider(pulse);
             Paint(pulse, "Pulse");
             // A halo round the pulse, so it reads as a ball of light rather than a bead.
-            GameObject halo = GlowQuad("Halo", pulse.transform, Vector3.zero, Vector3.one * (0.7f / (0.04f * ViewScale)),
-                                       "GlowBlobCyan");
+            GameObject halo = GlowQuad("Halo", pulse.transform, Vector3.zero, Vector3.one * (0.6f / 0.09f), "GlowBlobCyan");
             halo.AddComponent<FaceCamera>().tilt = true;
 
-            // A short fading trail, so the request reads as something travelling rather than
-            // a dot teleporting between panels. Width is in world metres.
+            // A fading trail, so the request reads as something travelling down the track
+            // rather than a dot teleporting between stations. Width is in world metres.
             TrailRenderer trail = pulse.AddComponent<TrailRenderer>();
-            trail.time = 0.55f;
-            trail.widthMultiplier = 0.06f;
+            trail.time = 0.6f;
+            trail.widthMultiplier = 0.08f;
             trail.minVertexDistance = 0.01f;
             trail.startColor = new Color(Cyan.r, Cyan.g, Cyan.b, 0.9f);
             trail.endColor = new Color(Cyan.r, Cyan.g, Cyan.b, 0f);
             trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             trail.receiveShadows = false;
             if (Materials.ContainsKey("GlowBeam")) trail.sharedMaterial = Materials["GlowBeam"];
+            pulse.SetActive(false);            // SystemViewDisplay shows it while the request travels
 
             SystemViewDisplay sysView = systemView.AddComponent<SystemViewDisplay>();
             sysView.player = player;
@@ -356,19 +383,20 @@ namespace OCS.VR.EditorTools
             sysView.pulse = pulse.transform;
             sysView.busyLift = 0f;              // the accent light says busy; nothing moves
             sysView.nodeAccents = accents;
-            // Far enough behind the panels that the pulse tucks in behind a node and its
-            // halo lights the panel from behind.
-            sysView.pulseOffset = new Vector3(0f, 0f, 0.08f);
+            sysView.pulseOffset = Vector3.zero;
+            sysView.pulseFloorHeight = PulseHeight;
+            // Stations are metres apart: two edges a second lets the packet be seen running.
+            sysView.travelSpeed = 2f;
 
             HopCaptions hopCaptions = systemView.AddComponent<HopCaptions>();
             hopCaptions.player = player;
             hopCaptions.graph = graph;
             hopCaptions.captions = captions;
 
-            BuildZoneLabels(systemView.transform, graph);
+            GameObject zoneLabels = BuildZoneLabels(systemView.transform, graph);
 
             // ---------- how the software works ----------
-            BuildBeams(trace, graph, systemView, sysView, cardDisplay, player);
+            GameObject floorTrack = BuildBeams(trace, graph, systemView, sysView, cardDisplay, player);
             BuildCardReadout(cardDisplay, player);
             GameObject dashboard = BuildDashboard(trace, player, out GameObject timeline);
             BuildPartLabels(sequence, partObjects, assembly);
@@ -401,7 +429,8 @@ namespace OCS.VR.EditorTools
             sequencer.loop = false;
             // Short while you are watching it on a monitor. Retune for the real thing.
             sequencer.emptyBenchDuration = 4f;
-            sequencer.powerOnDuration = 4f;
+            // Long enough for every station to rise out of the floor before the request leaves.
+            sequencer.powerOnDuration = 6f;
             sequencer.answerDuration = 6f;
 
             director.sequencer = sequencer;
@@ -410,27 +439,29 @@ namespace OCS.VR.EditorTools
             power.sequencer = sequencer;
             power.cards = cardVisuals;
 
-            // Only what matters now is on stage. Once the rig is built the empty tray and
-            // frame stand sink into the floor; as it powers on the system view grows out
-            // of the space above it; the timeline arrives with the request.
+            // Only what matters now is on stage. While the rig is built the hall holds just
+            // the bench, the tray and the frame stand. At power on the empty tray and stand
+            // sink into the floor, the track lights up and the stations rise out of the floor
+            // one by one, in the order the request will visit them. The student's screen,
+            // the timeline and the journey board arrive with the request.
             StageDirector stage = experience.AddComponent<StageDirector>();
             stage.sequencer = sequencer;
-            stage.cues = new[]
+            var cues = new List<StageCue>
             {
                 new StageCue { target = trayStand, act = Act.PowerOn, move = StageMove.Sink, delay = 0.3f, duration = 2.5f, depth = 1f },
                 new StageCue { target = frameStand, act = Act.PowerOn, move = StageMove.Sink, delay = 0.6f, duration = 2.5f, depth = 1f },
-                new StageCue { target = systemView.transform, act = Act.PowerOn, move = StageMove.Appear, delay = 1.8f, duration = 1.4f },
+                new StageCue { target = floorTrack.transform, act = Act.PowerOn, move = StageMove.Appear, delay = 1.4f, duration = 0.5f },
                 new StageCue { target = timeline.transform, act = Act.Request, move = StageMove.Appear, delay = 0f, duration = 0.6f },
                 new StageCue { target = answer.transform, act = Act.Request, move = StageMove.Appear, delay = 0f, duration = 0.8f },
                 new StageCue { target = journeyBoard.transform, act = Act.Request, move = StageMove.Appear, delay = 0f, duration = 0.8f },
             };
+            cues.AddRange(stationCues);
+            // The headings over the cloud and the private network, once their stations are up.
+            cues.Add(new StageCue { target = zoneLabels.transform, act = Act.PowerOn, move = StageMove.Appear, delay = 4.2f, duration = 0.8f });
+            // Once the stations are up, so the two don't compete for the eye.
             if (factsBoard != null)
-            {
-                // After the diagram has grown in, so the two don't compete for the eye.
-                var withFacts = new List<StageCue>(stage.cues);
-                withFacts.Add(new StageCue { target = factsBoard.transform, act = Act.PowerOn, move = StageMove.Appear, delay = 2.6f, duration = 0.9f });
-                stage.cues = withFacts.ToArray();
-            }
+                cues.Add(new StageCue { target = factsBoard.transform, act = Act.PowerOn, move = StageMove.Appear, delay = 4.6f, duration = 0.9f });
+            stage.cues = cues.ToArray();
 
             // ---------- the hall reacting ----------
             WorldPulseDriver pulseDriver = experience.AddComponent<WorldPulseDriver>();
@@ -469,7 +500,8 @@ namespace OCS.VR.EditorTools
         /// wherever the viewer's head really is, on a floor origin (XRFloorOrigin), so their
         /// own eye height stands on the hall floor. In the editor with no headset nothing moves
         /// it, and it keeps a standing eye height looking a little down at the rig: the preview.
-        /// No XR Interaction Toolkit: the experience is watched, so there is nothing to grab.
+        /// No XR Interaction Toolkit: the experience is watched, so there is nothing to grab;
+        /// the sticks only walk, turn and rise (XRLocomotion), and the menu button restarts.
         /// </summary>
         static void SetUpViewer(Camera cam)
         {
@@ -489,6 +521,21 @@ namespace OCS.VR.EditorTools
                 new UnityEngine.InputSystem.InputAction("Head Position", binding: "<XRHMD>/centerEyePosition", expectedControlType: "Vector3"));
             head.rotationInput = new UnityEngine.InputSystem.InputActionProperty(
                 new UnityEngine.InputSystem.InputAction("Head Rotation", binding: "<XRHMD>/centerEyeRotation", expectedControlType: "Quaternion"));
+
+            // Walk the hall to the stations with the left stick; turn and rise with the right.
+            XRLocomotion walk = rig.AddComponent<XRLocomotion>();
+            walk.head = cam.transform;
+            walk.boundsMin = WalkMin;
+            walk.boundsMax = WalkMax;
+            // The left controller's menu button starts the experience over.
+            rig.AddComponent<RestartButton>();
+
+            // The controls, written on the floor where the viewer starts: there when they
+            // look down for them, never in the way when they look up.
+            TextMesh controls = Text("Controls", null, new Vector3(ViewerEye.x, 0.01f, ViewerEye.z + 0.45f), 0.035f,
+                                     TextAnchor.MiddleCenter, CaptionColour,
+                                     "LEFT STICK  walk      RIGHT STICK  turn, rise\nMENU BUTTON  start again");
+            controls.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         }
 
         // ------------------------------------------------------ software visuals
@@ -659,8 +706,8 @@ namespace OCS.VR.EditorTools
         /// trace now, plus the beam from the rig's node down to the working card. The
         /// beams live under the system view so they grow in with it.
         /// </summary>
-        static void BuildBeams(TextAsset trace, SystemGraph graph, GameObject systemView, SystemViewDisplay view,
-                               RigCardDisplay rig, TracePlayer player)
+        static GameObject BuildBeams(TextAsset trace, SystemGraph graph, GameObject systemView, SystemViewDisplay view,
+                                     RigCardDisplay rig, TracePlayer player)
         {
             var from = new List<int>();
             var to = new List<int>();
@@ -696,11 +743,19 @@ namespace OCS.VR.EditorTools
                 }
             }
 
-            var idle = new Color(Cyan.r, Cyan.g, Cyan.b, 0.18f);
+            // The links lie flat on the floor between the stations: a track the request runs
+            // along and the viewer can follow on foot. Dim until the request passes.
+            GameObject track = new GameObject("Floor Track");
+            track.transform.SetParent(systemView.transform, false);
+            var idle = new Color(Cyan.r, Cyan.g, Cyan.b, 0.25f);
             var lines = new LineRenderer[from.Count];
             for (int e = 0; e < from.Count; e++)
-                lines[e] = Line("Beam " + graph.nodes[from[e]].nodeId + " - " + graph.nodes[to[e]].nodeId,
-                                systemView.transform, 0.008f, idle);
+            {
+                lines[e] = Line("Track " + graph.nodes[from[e]].nodeId + " - " + graph.nodes[to[e]].nodeId,
+                                track.transform, 0.03f, idle);
+                lines[e].alignment = LineAlignment.TransformZ;
+                lines[e].transform.rotation = Quaternion.Euler(90f, 0f, 0f);   // lie flat
+            }
 
             // Narrow where it leaves the panel, full width where it lands on the card, so it
             // reads as light falling onto the card rather than a bar joining two things.
@@ -719,11 +774,12 @@ namespace OCS.VR.EditorTools
             beams.cardBeam = cardBeam;
             beams.idleColor = idle;
             beams.litColor = new Color(Cyan.r, Cyan.g, Cyan.b, 0.95f);
-            beams.idleWidth = 0.008f;
-            beams.litWidth = 0.05f;
+            beams.idleWidth = 0.03f;
+            beams.litWidth = 0.1f;
+            beams.floorHeight = TrackHeight;
             beams.cardBeamColor = new Color(Amber.r, Amber.g, Amber.b, 0.85f);
             beams.cardBeamWidth = 0.12f;
-            beams.cardBeamDrop = PanelSize.y * ViewScale / 2f;
+            beams.cardBeamDrop = PanelSize.y * StationScale / 2f;
 
             // The glow on the working card, as bright as the card is busy.
             GameObject halo = GlowQuad("Card Halo", null, Vector3.zero, Vector3.one, "GlowBlob");
@@ -739,6 +795,165 @@ namespace OCS.VR.EditorTools
             chase.AddComponent<FaceCamera>().tilt = true;
             beams.chase = chase.GetComponent<Renderer>();
             beams.chase.enabled = false;            // off until a split model generates
+            return track;
+        }
+
+        /// <summary>
+        /// For each node, where it comes in the order the request first reaches the nodes:
+        /// 0 for the first stop, 1 for the next new one, and so on. Nodes the trace never
+        /// visits come last.
+        /// </summary>
+        static int[] RouteOrder(TextAsset trace, SystemGraph graph)
+        {
+            var order = new int[graph.NodeCount];
+            for (int i = 0; i < order.Length; i++) order[i] = -1;
+            int next = 0;
+            Trace parsed;
+            string error;
+            if (TraceLoader.TryParse(trace.text, out parsed, out error))
+            {
+                foreach (Hop hop in TraceLoader.DrawableHops(parsed))
+                {
+                    SystemNode node = graph.Resolve(hop);
+                    int i = node == null ? -1 : graph.IndexOf(node);
+                    if (i >= 0 && order[i] < 0) order[i] = next++;
+                }
+            }
+            for (int i = 0; i < order.Length; i++) if (order[i] < 0) order[i] = next++;
+            return order;
+        }
+
+        // ------------------------------------------------------------- stations
+
+        /// <summary>
+        /// What stands on the floor under a node's sign, so the software is a place you can
+        /// walk to: the student's desk, the AWS gate the request passes through, the broker's
+        /// tower with its queue, Redis's spinning disks of live state, RDS's database
+        /// stack, the NetBird portal into the private network. The GPU Rig's station is
+        /// the real rig on the bench, so it gets only a pad where the track ends.
+        ///
+        /// The root sits on the floor under the sign, turned so its front faces where the
+        /// viewer starts. It is what rises out of the floor at power on.
+        /// </summary>
+        static GameObject BuildStation(Transform parent, SystemNode node, float signHalfHeight)
+        {
+            var floor = new Vector3(node.position.x, 0f, node.position.z);
+            GameObject root = new GameObject("Station " + node.nodeId);
+            root.transform.SetParent(parent, false);
+            root.transform.position = floor;
+            Vector3 away = floor - new Vector3(ViewerEye.x, 0f, ViewerEye.z);
+            if (away.sqrMagnitude > 1e-4f) root.transform.rotation = Quaternion.LookRotation(away);
+
+            // A pad of light where the floor track arrives.
+            LightRing("Pad", root.transform, new Vector3(0f, 0.012f, 0f), 0.55f, 0.022f, new Color(Cyan.r, Cyan.g, Cyan.b, 0.7f));
+            LightRing("Pad Outer", root.transform, new Vector3(0f, 0.012f, 0f), 0.63f, 0.008f, new Color(Cyan.r, Cyan.g, Cyan.b, 0.25f));
+
+            float top;
+            bool mast = true;
+            switch (node.hopType)
+            {
+                case HopType.Client: top = StudentDesk(root); mast = false; break;   // the screen hangs there
+                case HopType.Relay: top = Gateway(root); break;
+                case HopType.Broker: top = BrokerTower(root); break;
+                case HopType.Store:
+                    top = node.nodeId.Contains("rds") ? DatabaseStack(root) : RegistryDisks(root);
+                    break;
+                case HopType.Network: top = Portal(root); break;
+                case HopType.Rig: return root;
+                default: top = 0f; break;
+            }
+
+            // A thin mast from the station up to its sign, so the sign belongs to it.
+            float signBottom = node.position.y - signHalfHeight;
+            if (mast && signBottom - top > 0.05f)
+                Child(root, "Mast", PrimitiveType.Cylinder, new Vector3(0f, (top + signBottom) / 2f, 0f),
+                      new Vector3(0.035f, (signBottom - top) / 2f, 0.035f), "Pillar");
+            return root;
+        }
+
+        /// <summary>The student: a desk with a laptop, lit by its screen. Returns its height.</summary>
+        static float StudentDesk(GameObject root)
+        {
+            Child(root, "Desk Top", PrimitiveType.Cube, new Vector3(0f, 0.73f, 0f), new Vector3(1.1f, 0.035f, 0.55f), "Plinth");
+            Child(root, "Desk Leg L", PrimitiveType.Cube, new Vector3(-0.5f, 0.36f, 0f), new Vector3(0.04f, 0.72f, 0.5f), "FrameBlack");
+            Child(root, "Desk Leg R", PrimitiveType.Cube, new Vector3(0.5f, 0.36f, 0f), new Vector3(0.04f, 0.72f, 0.5f), "FrameBlack");
+            Child(root, "Laptop", PrimitiveType.Cube, new Vector3(0f, 0.755f, -0.04f), new Vector3(0.34f, 0.015f, 0.23f), "PSUBody");
+            // The lid, tipped back from the viewer, its screen lit.
+            GameObject lid = Child(root, "Laptop Lid", PrimitiveType.Cube, new Vector3(0f, 0.865f, 0.085f), new Vector3(0.34f, 0.22f, 0.01f), "PSUBody");
+            lid.transform.localRotation = Quaternion.Euler(12f, 0f, 0f);
+            GameObject screen = Child(root, "Laptop Screen", PrimitiveType.Cube, new Vector3(0f, 0.865f, 0.078f), new Vector3(0.31f, 0.19f, 0.003f), "NodeAccentLit");
+            screen.transform.localRotation = Quaternion.Euler(12f, 0f, 0f);
+            return 0.98f;
+        }
+
+        /// <summary>
+        /// The AWS relay: a gate the request passes through, NGINX ending TLS, with a field
+        /// of light across it. Returns its height.
+        /// </summary>
+        static float Gateway(GameObject root)
+        {
+            Child(root, "Gate Post L", PrimitiveType.Cube, new Vector3(-0.55f, 0.85f, 0f), new Vector3(0.12f, 1.7f, 0.18f), "Pillar");
+            Child(root, "Gate Post R", PrimitiveType.Cube, new Vector3(0.55f, 0.85f, 0f), new Vector3(0.12f, 1.7f, 0.18f), "Pillar");
+            Child(root, "Gate Beam", PrimitiveType.Cube, new Vector3(0f, 1.76f, 0f), new Vector3(1.34f, 0.12f, 0.18f), "Pillar");
+            Child(root, "Gate Light L", PrimitiveType.Cube, new Vector3(-0.487f, 0.85f, 0f), new Vector3(0.008f, 1.5f, 0.04f), "NodeAccentLit");
+            Child(root, "Gate Light R", PrimitiveType.Cube, new Vector3(0.487f, 0.85f, 0f), new Vector3(0.008f, 1.5f, 0.04f), "NodeAccentLit");
+            Child(root, "Gate Light Top", PrimitiveType.Cube, new Vector3(0f, 1.697f, 0f), new Vector3(0.97f, 0.008f, 0.04f), "NodeAccentLit");
+            GlowQuad("Gate Field", root.transform, new Vector3(0f, 0.85f, 0f), new Vector3(0.95f, 1.6f, 1f), "GlowField");
+            return 1.82f;
+        }
+
+        /// <summary>The broker: a tower with rings of light up it, its queue. Returns its height.</summary>
+        static float BrokerTower(GameObject root)
+        {
+            Child(root, "Tower", PrimitiveType.Cylinder, new Vector3(0f, 0.7f, 0f), new Vector3(0.36f, 0.7f, 0.36f), "Pillar");
+            Child(root, "Tower Cap", PrimitiveType.Cylinder, new Vector3(0f, 1.41f, 0f), new Vector3(0.44f, 0.015f, 0.44f), "NodeAccentLit");
+            for (int k = 0; k < 4; k++)
+                LightRing("Queue " + k, root.transform, new Vector3(0f, 0.45f + 0.25f * k, 0f), 0.2f, 0.018f,
+                          new Color(Cyan.r, Cyan.g, Cyan.b, 0.85f));
+            return 1.43f;
+        }
+
+        /// <summary>Redis: a stack of thin disks lit at the edge, live state held in memory. Returns its height.</summary>
+        static float RegistryDisks(GameObject root)
+        {
+            Child(root, "Spindle", PrimitiveType.Cylinder, new Vector3(0f, 0.5f, 0f), new Vector3(0.05f, 0.5f, 0.05f), "Pillar");
+            for (int k = 0; k < 4; k++)
+            {
+                float y = 0.3f + 0.2f * k;
+                Child(root, "Disk " + k, PrimitiveType.Cylinder, new Vector3(0f, y, 0f), new Vector3(0.55f, 0.02f, 0.55f), "Plinth");
+                LightRing("Disk Edge " + k, root.transform, new Vector3(0f, y, 0f), 0.28f, 0.012f, new Color(Cyan.r, Cyan.g, Cyan.b, 0.9f));
+            }
+            return 1.0f;
+        }
+
+        /// <summary>RDS: three stacked drums with lit bands, the classic database. Returns its height.</summary>
+        static float DatabaseStack(GameObject root)
+        {
+            for (int k = 0; k < 3; k++)
+            {
+                float y = 0.18f + 0.32f * k;
+                Child(root, "Drum " + k, PrimitiveType.Cylinder, new Vector3(0f, y, 0f), new Vector3(0.5f, 0.14f, 0.5f), "PSUBody");
+                LightRing("Band " + k, root.transform, new Vector3(0f, y + 0.15f, 0f), 0.255f, 0.014f, new Color(Cyan.r, Cyan.g, Cyan.b, 0.85f));
+            }
+            return 0.96f;
+        }
+
+        /// <summary>
+        /// NetBird: a standing ring of light, the way into the private network. The floor
+        /// track runs under it. Returns its height.
+        /// </summary>
+        static float Portal(GameObject root)
+        {
+            Child(root, "Portal Foot", PrimitiveType.Cube, new Vector3(0f, 0.03f, 0f), new Vector3(1.0f, 0.06f, 0.3f), "Pillar");
+            // LightRing lies flat in its parent; this parent stands it up, facing the viewer.
+            GameObject frame = new GameObject("Portal");
+            frame.transform.SetParent(root.transform, false);
+            frame.transform.localPosition = new Vector3(0f, 0.95f, 0f);
+            frame.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
+            LightRing("Portal Ring", frame.transform, Vector3.zero, 0.8f, 0.05f, new Color(Cyan.r, Cyan.g, Cyan.b, 0.95f));
+            LightRing("Portal Ring Inner", frame.transform, Vector3.zero, 0.72f, 0.015f, new Color(Cyan.r, Cyan.g, Cyan.b, 0.4f));
+            GlowQuad("Portal Field", root.transform, new Vector3(0f, 0.95f, 0f), new Vector3(1.45f, 1.45f, 1f), "GlowField");
+            return 1.75f;
         }
 
         /// <summary>
@@ -746,8 +961,10 @@ namespace OCS.VR.EditorTools
         /// cloud edge on AWS and the private network. Each sits above the
         /// highest node of its group; groups with no nodes get no heading.
         /// </summary>
-        static void BuildZoneLabels(Transform systemView, SystemGraph graph)
+        static GameObject BuildZoneLabels(Transform systemView, SystemGraph graph)
         {
+            GameObject root = new GameObject("Zone Labels");
+            root.transform.SetParent(systemView, false);
             var zones = new[]
             {
                 (title: "CLOUD EDGE  ·  AWS EC2", types: new[] { HopType.Relay, HopType.Broker, HopType.Store }),
@@ -771,11 +988,12 @@ namespace OCS.VR.EditorTools
                 }
                 if (!any) continue;
                 Vector3 local = sum / n;
-                local.y = top + PanelSize.y * ViewScale / 2f + 0.14f;
-                TextMesh label = Text("Zone " + zone.title, systemView, local, 0.06f, TextAnchor.LowerCenter,
+                local.y = top + PanelSize.y * StationScale / 2f + 0.14f;
+                TextMesh label = Text("Zone " + zone.title, root.transform, local, 0.09f, TextAnchor.LowerCenter,
                                       new Color(Amber.r, Amber.g, Amber.b) * 0.9f, zone.title);
                 label.transform.rotation = FacingViewer(label.transform.position);
             }
+            return root;
         }
 
         /// <summary>The readout beside whichever card is working.</summary>
@@ -800,6 +1018,7 @@ namespace OCS.VR.EditorTools
             GameObject root = new GameObject("Answer Panel");
             root.transform.position = AnswerPosition;
             root.transform.rotation = FacingViewer(AnswerPosition);
+            root.transform.localScale = Vector3.one * AnswerScale;
 
             float w = AnswerSize.x, h = AnswerSize.y;
             Child(root, "Panel", PrimitiveType.Cube, Vector3.zero, new Vector3(w, h, 0.01f), "NodePanel");
@@ -828,11 +1047,12 @@ namespace OCS.VR.EditorTools
             return root;
         }
 
-        // Two boards standing either side of the viewer, turned toward them: what the rig
-        // is on the left, how the request moves through the system on the right. Off to the
-        // sides on purpose: the viewer turns to read them, and they never cover the rig.
-        static readonly Vector3 FactsBoardPosition = new Vector3(-1.55f, 1.55f, 0.45f);
-        static readonly Vector3 JourneyBoardPosition = new Vector3(1.55f, 1.55f, 0.45f);
+        // Two boards on the viewer's right, turned toward where they start: what the rig is,
+        // close by, and how the request moves through the system, further out. The left
+        // side belongs to the student's desk and the AWS gate, so the two halves balance,
+        // and neither board covers the rig or a station.
+        static readonly Vector3 FactsBoardPosition = new Vector3(2.2f, 1.5f, 0.2f);
+        static readonly Vector3 JourneyBoardPosition = new Vector3(3.6f, 1.6f, 2.2f);
         const float FactsBoardHeight = 0.6f;
         const float JourneyBoardHeight = 0.7f;
 
@@ -895,6 +1115,7 @@ namespace OCS.VR.EditorTools
             stream.rig = rig;
             stream.tokens = tokens;
             stream.target = target;
+            stream.flightSeconds = 1.4f;        // across the hall to the student's desk
         }
 
         /// <summary>Rings and sparks where things happen: parts seating, power, the answer.</summary>
@@ -1663,6 +1884,7 @@ namespace OCS.VR.EditorTools
             GlowMat("GlowBeam", 1f, 1.4f, Color.white);
             GlowMat("GlowBeamSoft", 1f, 2.5f, new Color(Cyan.r, Cyan.g, Cyan.b, 0.3f));
             GlowMat("GlowRing", 2f, 1.5f, Color.white);
+            GlowMat("GlowField", 0f, 1.2f, new Color(Cyan.r, Cyan.g, Cyan.b, 0.16f));
             ShaderMat("GridFloor", "OCS/Grid Floor");
             ShaderMat("RackLights", "OCS/Rack Lights");
             Mat("NodePanel", new Color(0.07f, 0.085f, 0.10f), 0.3f, 0.6f, emissive: true, emission: new Color(0.05f, 0.065f, 0.085f));

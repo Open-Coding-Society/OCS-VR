@@ -29,13 +29,19 @@ that doesn't match and fix it before going on.
      labelled for a few seconds, cards with their white dummy plugs facing you;
    - the tables sink, the cards light up one by one, the shockwave runs across the floor
      and the racks wake up behind it;
-   - the diagram grows in: Student, AWS Relay, Broker with Redis and RDS above, NetBird,
-     GPU Rig over the rig;
-   - the request walks the path slowly enough to read, each panel flashing and its
-     caption filling in; the boards appear left and right;
+   - a track of light appears on the floor and the stations rise out of it one by one,
+     in a horseshoe round the rig: the Student's desk front left, the AWS gate, the
+     Broker's tower with Redis and RDS behind it, the NetBird portal on the right, and
+     the GPU Rig sign behind the rig; the facts board appears on the right;
+   - a ball of light runs along the floor track from station to station, slowly enough
+     to follow, each sign flashing and its caption filling in; the student's screen,
+     the timeline and the journey board appear;
    - GPUs 0 to 3 go orange, the beam lands on them, a light runs along them, tokens
-     stream into the answer panel and the answer types out; the floor ripples orange;
-   - the answer goes back the same way and the Student panel flashes.
+     stream across to the student's screen and the answer types out; the floor ripples
+     orange;
+   - the answer runs back along the track and the Student station flashes.
+   - Walk round with WASD (arrow keys turn and rise) and press R to start over: the same
+     as the sticks and the menu button in the headset.
    - Nothing is pink or magenta, no text is mirrored, nothing floats in the wrong place.
    If something is off, a screenshot and the Console are all I need.
 
@@ -48,7 +54,8 @@ that doesn't match and fix it before going on.
 8. **Turn on OpenXR.** Edit > Project Settings > XR Plug-in Management:
    - Android tab: tick **OpenXR**.
    - OpenXR, Android tab: tick **Meta Quest Support**; Render Mode **Single Pass
-     Instanced**.
+     Instanced**; under Enabled Interaction Profiles, add **Oculus Touch Controller
+     Profile** (without it the sticks and the restart button do nothing).
    - Project Validation: fix anything red (it has a Fix button for most).
 
 9. **Check.** OCS > Quest > Check Setup. Every line says ok.
@@ -68,6 +75,9 @@ that doesn't match and fix it before going on.
 
 13. **Watch the whole arc in the headset**, as in step 5. Also check:
     - it's comfortable: nothing pops in too close to your face, text is readable;
+    - the controls: left stick walks, right stick turns (left and right) and rises
+      (up and down), the menu button on the left controller starts it over. They are
+      written on the floor at your feet;
     - **frame rate.** Turn on the Meta performance overlay (Meta Quest Developer Hub >
       Performance Overlay) and watch the fps through the power on wave and while tokens
       stream. It must stay at 72. If it doesn't, tell me where it dropped; the fixes in
@@ -82,5 +92,6 @@ that doesn't match and fix it before going on.
   slowed down to be followed and the GPU part is real time; the boards show real
   durations. Swap in a recorded trace when the broker writes one.
 - Four cards per replica is an assumption (`gpu_count` in `Assets/Data/sample-trace.json`).
-- The experience plays once, about two and a half minutes, then holds. Quit and relaunch
-  the app for the next person.
+- The experience plays once, about two and a half minutes, then holds, and the viewer
+  can walk round the stations. For the next person, press the menu button on the left
+  controller: it starts over from the empty bench.

@@ -42,7 +42,7 @@ flowchart LR
 
 **Act 3: Power on.** Fans spin, cards light. The moment a pile of parts becomes a machine.
 
-**Act 4: The request.** A prompt arrives. The system view opens up around the rig: client, broker, scheduler, rigs. The request travels the path with real per hop latency from a trace. Each hop labels itself as the request passes through.
+**Act 4: The request.** A prompt arrives. The software already stands round the rig as stations that rose out of the floor at power on: the student's desk, the AWS gate, the broker's tower with Redis and RDS, the NetBird portal. The request runs between them along a track of light on the floor, with real per hop latency from a trace. Each station's sign says what happened there as the request passes through. The viewer can walk the track with the left stick.
 
 **Act 5: The answer.** The path lands on the rig in front of you. One specific card lights up. You see its load and temperature climb while it works. Tokens come back out along the same path. Then the system view fades and you are standing next to the rig again, which is now just a machine on a bench.
 

@@ -38,6 +38,10 @@ namespace OCS.VR.Experience
         public float litWidth = 0.03f;
         public float fadePerSecond = 1.2f;
 
+        [Tooltip("Zero or more: the links run along the floor at this height, under each node, " +
+                 "as a track the viewer can walk beside. Negative: straight between the nodes.")]
+        public float floorHeight = -1f;
+
         [Tooltip("Card beam width at full load, metres. Its shape along the length " +
                  "comes from the line's width curve.")]
         public float cardBeamWidth = 0.03f;
@@ -138,8 +142,10 @@ namespace OCS.VR.Experience
                     if (a == null || b == null) continue;
 
                     float g = _state.Glow(e);
-                    line.SetPosition(0, a.position);
-                    line.SetPosition(1, b.position);
+                    Vector3 pa = a.position, pb = b.position;
+                    if (floorHeight >= 0f) { pa.y = floorHeight; pb.y = floorHeight; }
+                    line.SetPosition(0, pa);
+                    line.SetPosition(1, pb);
                     line.widthMultiplier = Mathf.Lerp(idleWidth, litWidth, g);
                     Color c = Color.Lerp(idleColor, litColor, g);
                     line.startColor = c;

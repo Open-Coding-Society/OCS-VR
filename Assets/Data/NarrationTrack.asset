@@ -34,7 +34,7 @@ MonoBehaviour:
     holdSeconds: 6
     clip: {fileID: 0}
   - cue: act.Complete
-    text: "That is one request, from a student's browser to a GPU and back."
+    text: "That is one request, from a student's browser to a GPU and back. Walk over and look closer."
     holdSeconds: 6
     clip: {fileID: 0}
   - cue: hop.Client
