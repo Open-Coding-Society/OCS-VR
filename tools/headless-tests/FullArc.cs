@@ -77,7 +77,7 @@ public static class FullArc
         var seq = new ExperienceSequencer
         {
             tracePlayer = player, assemblyPlayer = assembly,
-            emptyBenchDuration = 20f, powerOnDuration = 15f, answerDuration = 20f,
+            emptyBenchDuration = 20f, powerOnDuration = 15f, answerDuration = 20f, builtWithSceneVersion = ExperienceSequencer.SceneVersion,
             playOnStart = true, loop = false
         };
         var narrator = new NarrationDirector { track = track, sequencer = seq, assemblyPlayer = assembly, tracePlayer = player, narrateHops = true };
