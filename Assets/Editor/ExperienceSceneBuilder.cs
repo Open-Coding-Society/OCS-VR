@@ -154,7 +154,7 @@ namespace OCS.VR.EditorTools
 
             // The template's light casts realtime shadows. CLAUDE.md: none until profiled.
             // Dimmed and cooled so the room reads as indoors and the LEDs stand out.
-            Light sun = Object.FindFirstObjectByType<Light>();
+            Light sun = Object.FindAnyObjectByType<Light>();
             if (sun != null)
             {
                 sun.shadows = LightShadows.None;
@@ -480,7 +480,7 @@ namespace OCS.VR.EditorTools
             cam.transform.SetParent(rig.transform, false);
             cam.transform.localPosition = new Vector3(0f, ViewerEye.y, 0f);
             cam.transform.localRotation = Quaternion.Euler(10f, 0f, 0f);
-            cam.fieldOfView = 70f;                   // desk preview only; the headset sets its own
+            cam.fieldOfView = 60f;                   // desk preview only; the headset sets its own
             cam.nearClipPlane = 0.05f;               // parts fly close to the viewer's face
             cam.name = "Main Camera (head)";
 

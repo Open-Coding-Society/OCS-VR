@@ -78,7 +78,7 @@ namespace UnityEngine
     {
         public string name = "";
         public static void DestroyImmediate(Object o) { }
-        public static T FindFirstObjectByType<T>() where T : Object => null;
+        public static T FindAnyObjectByType<T>() where T : Object => null;
     }
 
     public struct Color
