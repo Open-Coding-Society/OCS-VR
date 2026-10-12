@@ -180,7 +180,7 @@ namespace OCS.VR.EditorTools
             Line(report, ref missing, sceneInBuild, "Experience scene is in the build", "OCS > Quest > 2. Apply Quest Build Settings");
             Line(report, ref missing, Directory.Exists("Assets/Art/Models") && File.Exists("Assets/Art/Models/gpu_card.fbx"),
                  "Rig models in Assets/Art/Models (placeholders work too, but look rougher)",
-                 "Unzip rig-models-v2.zip into the project, then rebuild the scene");
+                 "git pull (the models are in the repo), then rebuild the scene");
             Line(report, ref missing, Shader.Find("OCS/Glow") != null && Shader.Find("OCS/Grid Floor") != null && Shader.Find("OCS/Rack Lights") != null,
                  "OCS shaders compiled", "Check the Console for a shader error in Assets/Shaders");
 

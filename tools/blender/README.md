@@ -42,9 +42,9 @@ It prints one line per part and writes eight `.fbx` files to `Assets/Art/Models/
 2. Run **OCS → Build Experience Scene**. The Console line should now say
    `23 parts from Assets/Art/Models` instead of `placeholder parts`: the frame,
    motherboard, cooler, RAM, cables and both supplies, plus eight risers and eight cards.
-3. Commit the models. They go through Git LFS, so run `git lfs install` once on your
-   machine first, then `git add Assets/Art/Models` and commit as usual. Include the
-   `.meta` files Unity creates.
+3. Commit the models with `git add Assets/Art/Models`, including their `.meta` files. The
+   current set is about 300 KB and lives in the repo as plain files; move them to Git LFS
+   if textures or much heavier meshes arrive.
 
 ## What the scene builder relies on
 

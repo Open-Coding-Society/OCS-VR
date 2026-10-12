@@ -12,8 +12,8 @@ that doesn't match and fix it before going on.
    - See: no red errors in the Console. If Unity opens in Safe Mode, a script didn't
      compile: send the first error.
 
-2. **Models.** Unzip `rig-models-v2.zip` into the project folder (it fills
-   `Assets/Art/Models`, 8 models with their `.meta` files).
+2. **Models.** Nothing to do: the 8 rig models are in the repo, in `Assets/Art/Models`
+   (about 300 KB, so no Git LFS needed). Unity imports them when it opens the project.
 
 3. **URP.** OCS > Quest > 0. Set Up URP for Quest.
    - See: "URP is active on every quality level" in the Console. This is what stops
@@ -53,8 +53,7 @@ that doesn't match and fix it before going on.
 
 9. **Check.** OCS > Quest > Check Setup. Every line says ok.
 
-10. **Commit.** Commit `Assets/Settings`, `Assets/Scenes/Experience.unity`,
-    `Assets/Art/Models` (through Git LFS: `git lfs install` once) and the
+10. **Commit.** Commit `Assets/Settings`, `Assets/Scenes/Experience.unity` and the
     `ProjectSettings`/`Packages` changes, with their `.meta` files.
 
 ## On the headset
