@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80052a8fea48430b8a8e628648abc673, type: 3}
   m_Name: RigFacts
   m_EditorClassIdentifier: 
-  title: "RIG 2 AT A GLANCE"
+  title: "THE RIG AT A GLANCE"
   lines:
   - "8 × EVGA GTX 1070 SC, 8 GB each"
   - "ASUS B250 mining board, PCIe risers"
@@ -22,4 +22,3 @@ MonoBehaviour:
   - "Split across cards, over PCIe: no NVLink"
   - "About 12 tokens/s today, aiming for 60+"
   - "Warm start 2 s, cold start 2 min 27 s"
-  - "Rig 1 serves students; Rig 2 is dev & test"

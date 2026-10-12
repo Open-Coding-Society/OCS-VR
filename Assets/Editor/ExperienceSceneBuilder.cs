@@ -632,7 +632,7 @@ namespace OCS.VR.EditorTools
             main.startColor = colour;
             main.maxParticles = max;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.scalingMode = ParticleSystemScalingMode.Hierarchical;
+            main.scalingMode = ParticleSystemScalingMode.Hierarchy;
             var emission = ps.emission;
             emission.rateOverTime = 0f;
 
@@ -850,7 +850,7 @@ namespace OCS.VR.EditorTools
             return root;
         }
 
-        /// <summary>"Rig 2 at a glance": the facts from RigFacts.asset.</summary>
+        /// <summary>"The rig at a glance": the facts from RigFacts.asset.</summary>
         static GameObject BuildFactsBoard(InfoBoard facts)
         {
             const float w = 1.05f;
@@ -1175,7 +1175,7 @@ namespace OCS.VR.EditorTools
                                 TextAnchor.MiddleCenter, new Color(0.75f, 0.92f, 1f), "OCS  INTELLIGENCE  INFRASTRUCTURE");
             RoomSlab(env, "Sign Far Line", new Vector3(0f, 5.6f, HallFar - 0.1f), new Vector3(13f, 0.04f, 0.02f), "NodeAccentLit");
             TextMesh near = Text("Sign Near", env.transform, new Vector3(0f, 5.0f, HallNear + 0.1f), 0.7f,
-                                 TextAnchor.MiddleCenter, new Color(1f, 0.8f, 0.55f), "RIG 2   ·   8 × GTX 1070");
+                                 TextAnchor.MiddleCenter, new Color(1f, 0.8f, 0.55f), "GPU RIG   ·   8 × GTX 1070");
             near.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
             RoomSlab(env, "Sign Near Line", new Vector3(0f, 4.4f, HallNear + 0.1f), new Vector3(10f, 0.04f, 0.02f), "EdgeAmber");
 

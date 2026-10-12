@@ -79,7 +79,7 @@ MonoBehaviour:
     cardIndex: -1
     travelSeconds: 2.2
     settleSeconds: 0.6
-    narration: "So Rig 2 has two of them, thirteen hundred watts each."
+    narration: "So this rig has two of them, thirteen hundred watts each."
     labelled: 1
     label: "Antec HCP 1300 W"
     detail: "Two supplies: 2,600 W between them"

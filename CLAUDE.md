@@ -10,7 +10,7 @@ This is an **experience**, not a tutorial. There is no quiz, no gating, no scori
 
 Part of the CSH / OCS Intelligence Infrastructure project. Teammates Yash Parikh and Anvay Vahia own the broker and control plane. I own the GPU rigs and this VR layer.
 
-How the system works, from the week 1 deck: a student's browser → AWS relay (EC2, NGINX + TLS) → FastAPI broker (auth, queue, scheduling; Redis for the live worker registry, RDS for users and history) → NetBird private overlay → llama-server on a GPU rig. Tokens stream back the same way. There are no Mac Minis. The model is Qwen3.8 27B, GGUF Q4_K_M, split across several 1070s per replica over PCIe (no NVLink). Rig 1 is production, Rig 2 is dev & test. About 12 tokens/s today, target 60+; warm start about 2 s, cold start 2 min 27 s. Live today the path is Open WebUI to Ollama over NetBird; the broker, Redis and RDS are being built. The VR shows the target path and says so.
+How the system works, from the week 1 deck: a student's browser → AWS relay (EC2, NGINX + TLS) → FastAPI broker (auth, queue, scheduling; Redis for the live worker registry, RDS for users and history) → NetBird private overlay → llama-server on a GPU rig. Tokens stream back the same way. There are no Mac Minis. The model is Qwen3.8 27B, GGUF Q4_K_M, split across several 1070s per replica over PCIe (no NVLink). Rig 1 is production, Rig 2 is dev & test. The VR shows one rig only, Rig 2, labelled "GPU Rig" (node id `rig-2`). About 12 tokens/s today, target 60+; warm start about 2 s, cold start 2 min 27 s. Live today the path is Open WebUI to Ollama over NetBird; the broker, Redis and RDS are being built. The VR shows the target path and says so.
 
 ## Hard constraints
 
@@ -108,7 +108,7 @@ Experience
 - `Experience/RigPower.cs` — powers the cards on in a ripple at Act 3
 - `Experience/RoomAtmosphere.cs` — ambient light and background, carried by the room
 - `Experience/BeamGlowState.cs` — which system view links are lit, plain C#
-- `Experience/SystemBeams.cs` — draws those links, and the beam from Rig 2 to the card
+- `Experience/SystemBeams.cs` — draws those links, and the beam from the GPU Rig node to the card
 - `Experience/HopCaptions.cs` — what each node did and how long it took
 - `Experience/TelemetryText.cs` — every readout string, plain C#
 - `Experience/CardTelemetryLabel.cs` — load, temperature and tokens over the working card
@@ -130,7 +130,7 @@ Experience
 - `Experience/AnswerText.cs`, `Experience/AnswerPanel.cs` — the prompt, and the answer
   typing itself out word by word
 - `Experience/InfoBoard.cs` — a board of facts as data (`RigFacts.asset`), shown left of
-  the viewer as "Rig 2 at a glance"
+  the viewer as "The rig at a glance"
 - `Experience/JourneyText.cs`, `Experience/JourneyBoard.cs` — "How a request flows", right
   of the viewer: every hop with its time, lit as the request reaches it, then the total
   and the GPU's share
@@ -164,7 +164,7 @@ between that script, `RigLayout.asset` and the builder; change them together.
 
 Data, in `Assets/Data/`
 - `RigLayout.asset`, `AssemblySequence.asset` (23 steps), `SystemGraph.asset`
-  (8 nodes: student, AWS relay, broker, Redis, RDS, NetBird, Rig 2, Rig 1),
+  (7 nodes: student, AWS relay, broker, Redis, RDS, NetBird, GPU Rig),
   `NarrationTrack.asset` (14 lines), `RigFacts.asset`, `sample-trace.json` (15 hops on the
   target path, the model on GPUs 0 to 3)
 

@@ -500,7 +500,7 @@ namespace UnityEngine
     public enum ParticleSystemSimulationSpace { Local, World, Custom }
     public enum ParticleSystemShapeType { Sphere = 0, Hemisphere = 2, Cone = 4, Box = 5, Circle = 10 }
     public enum ParticleSystemRenderMode { Billboard, Stretch, HorizontalBillboard, VerticalBillboard, Mesh, None }
-    public enum ParticleSystemScalingMode { Hierarchical, Local, Shape }
+    public enum ParticleSystemScalingMode { Hierarchy, Local, Shape }
 
     public struct GradientColorKey { public Color color; public float time; public GradientColorKey(Color c, float t) { color = c; time = t; } }
     public struct GradientAlphaKey { public float alpha, time; public GradientAlphaKey(float a, float t) { alpha = a; time = t; } }

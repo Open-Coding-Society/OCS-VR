@@ -10,7 +10,7 @@
     { "hop": "broker", "node_id": "ocs-broker", "t_start_ms": 52, "t_end_ms": 74, "status": "ok", "label": "Signed in, job queued" },
     { "hop": "registry", "node_id": "redis", "t_start_ms": 74, "t_end_ms": 79, "status": "ok", "label": "Healthy workers looked up" },
     { "hop": "scheduler", "node_id": "ocs-broker", "t_start_ms": 79, "t_end_ms": 88, "status": "ok", "label": "Warm, least busy replica picked" },
-    { "hop": "network", "node_id": "netbird", "t_start_ms": 88, "t_end_ms": 104, "status": "ok", "label": "Private overlay to Rig 2" },
+    { "hop": "network", "node_id": "netbird", "t_start_ms": 88, "t_end_ms": 104, "status": "ok", "label": "Private overlay to the GPU rig" },
     {
       "hop": "rig", "node_id": "rig-2", "t_start_ms": 104, "t_end_ms": 131, "status": "ok", "label": "llama-server takes the job",
       "gpu_index": 0, "gpu_count": 4, "gpu_util": 92, "vram_used_mb": 5800, "temp_c": 68,

@@ -293,7 +293,7 @@ public static class FullArc
         string journeyEnd = journey.Shown ?? "";
         Console.WriteLine($"  journey board, end    : \"{journeyEnd.Substring(Math.Max(0, journeyEnd.LastIndexOf('\n') + 1))}\"");
         Console.WriteLine($"  answer heading        : \"{(answerPanel.responseHeading != null ? answerPanel.responseHeading.text : "(none)")}\"");
-        if (journeyDuringModel == null || !journeyDuringModel.Contains("<color=" + JourneyText.Gpu + ">9  Rig 2  ·  Generating"))
+        if (journeyDuringModel == null || !journeyDuringModel.Contains("<color=" + JourneyText.Gpu + ">9  GPU Rig  ·  Generating"))
         { Console.WriteLine("  >>> BUG: the journey board didn't light the GPU step while it ran.\n      " + journeyDuringModel); problems++; }
         if (!journeyEnd.Contains("Total 10.02 s") || !journeyEnd.Contains("98.1%")) { Console.WriteLine("  >>> BUG: the journey board didn't end on the total."); problems++; }
         if (peakWave < 0.5f || wakeAtRequest < 30f) { Console.WriteLine("  >>> BUG: the power on wave didn't run or didn't wake the hall."); problems++; }

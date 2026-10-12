@@ -30,7 +30,7 @@ that doesn't match and fix it before going on.
    - the tables sink, the cards light up one by one, the shockwave runs across the floor
      and the racks wake up behind it;
    - the diagram grows in: Student, AWS Relay, Broker with Redis and RDS above, NetBird,
-     Rig 2 over the rig, Rig 1 to the right;
+     GPU Rig over the rig;
    - the request walks the path slowly enough to read, each panel flashing and its
      caption filling in; the boards appear left and right;
    - GPUs 0 to 3 go orange, the beam lands on them, a light runs along them, tokens
