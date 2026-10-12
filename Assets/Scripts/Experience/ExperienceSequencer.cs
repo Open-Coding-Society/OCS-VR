@@ -47,6 +47,15 @@ namespace OCS.VR.Experience
         /// <summary>docs/experience-design.md section 2: under five minutes, unattended.</summary>
         public const float MaxRuntimeSeconds = 300f;
 
+        /// <summary>
+        /// Bumped whenever OCS > Build Experience Scene changes what it builds. A scene saved
+        /// by an older builder still plays, with the current data but the old layout, which
+        /// is easy to mistake for the real thing; Start says so in red.
+        /// </summary>
+        public const int SceneVersion = 3;
+
+        [HideInInspector] public int builtWithSceneVersion;
+
         public event Action<Act> ActStarted;
         public event Action<Act> ActEnded;
 
@@ -90,6 +99,9 @@ namespace OCS.VR.Experience
 
         void Start()
         {
+            if (builtWithSceneVersion < SceneVersion)
+                Debug.LogError("[Sequencer] This scene was built by an older version of the scene builder, " +
+                               "so it shows the old layout. Run OCS > Build Experience Scene, then press Play again.");
             WarnIfOverBudget();
             if (playOnStart) Begin();
         }

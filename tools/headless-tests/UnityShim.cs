@@ -334,6 +334,7 @@ namespace UnityEngine
 
     [AttributeUsage(AttributeTargets.Field)] public class HeaderAttribute : Attribute { public HeaderAttribute(string s) { } }
     [AttributeUsage(AttributeTargets.Field)] public class TooltipAttribute : Attribute { public TooltipAttribute(string s) { } }
+    [AttributeUsage(AttributeTargets.Field)] public class HideInInspector : Attribute { }
     [AttributeUsage(AttributeTargets.Field)] public class RangeAttribute : Attribute { public RangeAttribute(float a, float b) { } }
     [AttributeUsage(AttributeTargets.Field)] public class TextAreaAttribute : Attribute { public TextAreaAttribute(int a, int b) { } }
     [AttributeUsage(AttributeTargets.Field)] public class SerializeFieldAttribute : Attribute { }

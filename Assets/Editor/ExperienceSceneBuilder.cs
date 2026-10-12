@@ -397,6 +397,7 @@ namespace OCS.VR.EditorTools
             sequencer.tracePlayer = player;
             sequencer.assemblyPlayer = assembly;
             sequencer.playOnStart = true;
+            sequencer.builtWithSceneVersion = ExperienceSequencer.SceneVersion;
             sequencer.loop = false;
             // Short while you are watching it on a monitor. Retune for the real thing.
             sequencer.emptyBenchDuration = 4f;
