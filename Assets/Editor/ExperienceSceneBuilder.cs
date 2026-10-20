@@ -530,6 +530,8 @@ namespace OCS.VR.EditorTools
             // The left controller's menu button starts the experience over.
             rig.AddComponent<RestartButton>();
 
+            BuildGazeRestart(cam.transform);
+
             // Hold the right trigger to fast forward. A small note low in view says so.
             TextMesh fast = Text("Fast Forward Note", cam.transform, new Vector3(0f, -0.32f, 1.4f), 0.04f,
                                  TextAnchor.MiddleCenter, Amber, ">>  FAST FORWARD  4×");
@@ -544,6 +546,41 @@ namespace OCS.VR.EditorTools
                                      TextAnchor.MiddleCenter, CaptionColour,
                                      "LEFT STICK  walk      RIGHT STICK  turn, rise\nHOLD RIGHT TRIGGER  fast forward      MENU BUTTON  start again");
             controls.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        }
+
+        // Behind where the viewer starts, facing them when they turn round.
+        static readonly Vector3 RestartPanelPosition = new Vector3(0f, 1.5f, -1.75f);
+
+        /// <summary>
+        /// START AGAIN: a panel behind the viewer's starting spot. Look at it for two seconds
+        /// and the experience starts over; a bar fills as you look. Works without a
+        /// controller, for whoever has the headset on.
+        /// </summary>
+        static void BuildGazeRestart(Transform head)
+        {
+            const float w = 0.7f, h = 0.3f;
+            GameObject root = new GameObject("Start Again Panel");
+            root.transform.position = RestartPanelPosition;
+            root.transform.rotation = Quaternion.Euler(0f, 180f, 0f);     // faces the starting spot
+            float front = -0.008f;
+            Child(root, "Panel", PrimitiveType.Cube, Vector3.zero, new Vector3(w, h, 0.01f), "NodePanel");
+            Child(root, "Top Edge", PrimitiveType.Cube, new Vector3(0f, h / 2f - 0.003f, front), new Vector3(w, 0.006f, 0.003f), "NodeAccentLit");
+            GlowQuad("Top Glow", root.transform, new Vector3(0f, h / 2f, front - 0.002f), new Vector3(w * 1.1f, 0.12f, 1f), "GlowBeamSoft");
+            Text("Title", root.transform, new Vector3(0f, 0.06f, front), 0.06f, TextAnchor.MiddleCenter, TextColour, "START AGAIN");
+            Text("How", root.transform, new Vector3(0f, -0.01f, front), 0.024f, TextAnchor.MiddleCenter, CaptionColour,
+                 "Look here for two seconds, or press the menu button");
+
+            // The bar fills from its left end: the pivot is there and scales along x.
+            Child(root, "Bar Track", PrimitiveType.Cube, new Vector3(0f, -0.085f, front), new Vector3(w - 0.12f, 0.016f, 0.003f), "TimelineSegment");
+            GameObject pivot = new GameObject("Bar Fill");
+            pivot.transform.SetParent(root.transform, false);
+            pivot.transform.localPosition = new Vector3(-(w - 0.12f) / 2f, -0.085f, front - 0.002f);
+            Child(pivot, "Bar", PrimitiveType.Cube, new Vector3((w - 0.12f) / 2f, 0f, 0f), new Vector3(w - 0.12f, 0.016f, 0.003f), "EdgeAmber");
+
+            GazeRestart gaze = root.AddComponent<GazeRestart>();
+            gaze.head = head;
+            gaze.fill = pivot.transform;
+            gaze.holdSeconds = 2f;
         }
 
         // ------------------------------------------------------ software visuals

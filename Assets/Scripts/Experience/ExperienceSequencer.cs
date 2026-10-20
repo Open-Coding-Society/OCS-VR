@@ -52,7 +52,7 @@ namespace OCS.VR.Experience
         /// by an older builder still plays, with the current data but the old layout, which
         /// is easy to mistake for the real thing; Start says so in red.
         /// </summary>
-        public const int SceneVersion = 6;
+        public const int SceneVersion = 7;
 
         [HideInInspector] public int builtWithSceneVersion;
 

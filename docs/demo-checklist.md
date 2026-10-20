@@ -40,8 +40,8 @@ that doesn't match and fix it before going on.
      stream across to the student's screen and the answer types out; the floor ripples
      orange;
    - the answer runs back along the track and the Student station flashes.
-   - Walk round with WASD (arrow keys turn and rise), hold F to fast forward and press R to
-     start over: the same as the sticks, the right trigger and the menu button in the
+   - Walk round with WASD (arrow keys turn and rise), hold F to fast forward, and press R or click Restart in
+     the Game view's corner to start over: the same as the sticks, the right trigger and the menu button in the
      headset.
    - Nothing is pink or magenta, no text is mirrored, nothing floats in the wrong place.
    If something is off, a screenshot and the Console are all I need.
@@ -96,4 +96,5 @@ that doesn't match and fix it before going on.
 - Four cards per replica is an assumption (`gpu_count` in `Assets/Data/sample-trace.json`).
 - The experience plays once, about two and a half minutes, then holds, and the viewer
   can walk round the stations. For the next person, press the menu button on the left
-  controller: it starts over from the empty bench.
+  controller, or turn round and look at the START AGAIN panel for two seconds: either
+  starts over from the empty bench.
