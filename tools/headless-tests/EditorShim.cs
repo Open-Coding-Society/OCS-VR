@@ -22,7 +22,10 @@ namespace UnityEditor
     {
         public static void SetDirty(UnityEngine.Object o) { }
         public static bool DisplayDialog(string title, string message, string ok, string cancel) => true;
+        public static int DisplayDialogComplex(string title, string message, string ok, string cancel, string alt) => 0;
     }
+    [System.AttributeUsage(System.AttributeTargets.Class)] public class InitializeOnLoadAttribute : System.Attribute { }
+    public enum PlayModeStateChange { EnteredEditMode, ExitingEditMode, EnteredPlayMode, ExitingPlayMode }
 
     public enum InteractionMode { AutomatedAction, UserAction }
 
@@ -107,7 +110,14 @@ namespace UnityEditor
     }
     public static class EditorBuildSettings { public static EditorBuildSettingsScene[] scenes = new EditorBuildSettingsScene[0]; }
 
-    public static class EditorApplication { public delegate void CallbackFunction(); public static CallbackFunction update; }
+    public static class EditorApplication
+    {
+        public delegate void CallbackFunction();
+        public static CallbackFunction update;
+        public static CallbackFunction delayCall;
+        public static bool isPlaying;
+        public static event System.Action<PlayModeStateChange> playModeStateChanged;
+    }
 }
 
 namespace UnityEditor.Build
@@ -161,4 +171,15 @@ namespace UnityEngine
         public static int GetQualityLevel() => 0;
         public static void SetQualityLevel(int i, bool applyExpensiveChanges) { }
     }
+}
+
+namespace UnityEditor.Build
+{
+    public interface IOrderedCallback { int callbackOrder { get; } }
+    public interface IPreprocessBuildWithReport : IOrderedCallback { void OnPreprocessBuild(UnityEditor.Build.Reporting.BuildReport report); }
+    public class BuildFailedException : System.Exception { public BuildFailedException(string m) : base(m) { } }
+}
+namespace UnityEditor.Build.Reporting
+{
+    public class BuildReport { }
 }

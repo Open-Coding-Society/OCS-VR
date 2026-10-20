@@ -173,6 +173,10 @@ Editor
   face the viewer; SystemGraph positions are where the signs hang, in world space. OCS > Save Environment As Prefab saves the current room, so edits made to
   it by hand survive rebuilds. Edits to anything else in the scene do not
 - `Editor/RigModelImportSettings.cs` — import settings for those models
+- `Editor/SceneVersionCheck.cs` — pressing Play on a scene older than the builder
+  (`ExperienceSequencer.SceneVersion`) offers to rebuild it first, and a player build with
+  one fails with the fix in the message, so an old layout never reaches the headset. Bump
+  `SceneVersion` whenever the builder changes what it builds
 
 Models: `tools/blender/generate_rig_parts.py` builds them in Blender at real size, modelled
 on photos of Rig 2 (EVGA GTX 1070 SCs, a two level black frame, two Antec 1300 W supplies).

@@ -64,6 +64,10 @@ that doesn't match and fix it before going on.
 10. **Commit.** Commit `Assets/Settings`, `Assets/Scenes/Experience.unity` and the
     `ProjectSettings`/`Packages` changes, with their `.meta` files.
 
+If Play says the scene is out of date, choose **Rebuild and play**. If a build fails
+saying the scene is out of date, run OCS > Build Experience Scene and build again. Both
+mean new code was pulled without rebuilding the scene.
+
 ## On the headset
 
 11. **Build and Run.** Headset plugged in by USB, developer mode on, "Allow USB debugging"
